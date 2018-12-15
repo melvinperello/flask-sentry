@@ -1,7 +1,10 @@
 from flask import Flask
 from flask_restful import Api
-from flaskr.resources.person import PersonResource,PersonListResource
-from flaskr.resources.record import Record,RecordList
+
+from resources import PersonListResource
+from resources import PersonResource
+from resources import RecordList
+from resources import Record
 
 
 app = Flask(__name__)
@@ -13,5 +16,5 @@ api.add_resource(RecordList, '/record')
 api.add_resource(Record,'/record/<int:id>')
 
 
-if __name__ == '__main__':
-     app.run(debug=True,port='80')
+#if __name__ == '__main__':
+#     app.run(debug=True,port='80')

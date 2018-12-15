@@ -1,15 +1,13 @@
-from flaskr.models import PersonRepository
-from flaskr.db import session
-
-from flask_restful import reqparse
-from flask_restful import abort
 from flask_restful import Resource
+from flask_restful import abort
 from flask_restful import fields
 from flask_restful import marshal_with
+from flask_restful import reqparse
+from db import session
 
 
 
-
+from models import PersonRepository
 
 parser = reqparse.RequestParser()
 parser.add_argument('nameLast', type=str,required=True,help='Last Name is required')
@@ -77,3 +75,18 @@ class PersonRecordList(Resource):
         pass
 
 
+class RecordList(Resource):
+    def get(self):
+        pass
+
+class Record(Resource):
+
+    def get(self,id):
+        pass
+
+    def put(self,id):
+        pass
+
+    def delete(self,id):
+
+        pass
