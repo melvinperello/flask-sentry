@@ -2,6 +2,7 @@ from sqlalchemy import Column
 from sqlalchemy import Integer
 from sqlalchemy import BIGINT
 from sqlalchemy import String
+from sqlalchemy import DateTime
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -17,9 +18,9 @@ class PersonRepository(Base):
     contactMobile = Column(String(100),default='')
     contactEmail = Column(String(100),default='')
     # audit
-    updatedAt = Column(BIGINT,default=0)
+    updatedAt = Column(DateTime)
     updatedBy = Column(String(100),default='')
-    deletedAt = Column(BIGINT,default=0)
+    deletedAt = Column(DateTime)
     deletedBy = Column(String(100),default='')
 
 
@@ -27,11 +28,16 @@ class RecordRepository(Base):
     __tablename__ = "record"
     id = Column(Integer, primary_key=True)
     
+    type = Column(String(100),default='')
+    #
+    timeIn = Column(DateTime)
+    timeOut = Column(DateTime)
+    
     # audit
-    updatedAt = Column(BIGINT)
-    updatedBy = Column(String(100))
-    deletedAt = Column(BIGINT)
-    deletedBy = Column(String(100))
+    updatedAt = Column(DateTime)
+    updatedBy = Column(String(100),default='')
+    deletedAt = Column(DateTime)
+    deletedBy = Column(String(100),default='')
     
     
 

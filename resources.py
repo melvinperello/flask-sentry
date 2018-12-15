@@ -1,12 +1,16 @@
+# db
+from db import session
+from models import PersonRepository
+# rest
 from flask_restful import Resource
 from flask_restful import abort
 from flask_restful import fields
 from flask_restful import marshal_with
 from flask_restful import reqparse
-from db import session
-from models import PersonRepository
-
+# request
 from flask import request
+
+import datetime
 
 
 
@@ -31,14 +35,14 @@ personFields = {
     'contactTel' : fields.String,
     'contactMobile' : fields.String,
     'contactEmail' : fields.String,
-    'updatedAt' : fields.Integer,
+    'updatedAt' : fields.DateTime(dt_format='rfc822'),
     'updatedBy' : fields.String,
 }
 class PersonListResource(Resource):
 
     @marshal_with(personFields)
     def get(self):
-        personList = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).all()
+        personList = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).all()
         if not personList:
             abort(404, message="List is empty")
         return personList,200
@@ -55,6 +59,9 @@ class PersonListResource(Resource):
         person.contactTel = parsed_args['contactTel']
         person.contactMobile = parsed_args['contactMobile']
         person.contactEmail = parsed_args['contactEmail']
+        
+        person.updatedAt = datetime.datetime.utcnow()
+        person.updatedBy = 'sys'
 
         session.add(person)
         session.commit()
@@ -65,7 +72,7 @@ class PersonResource(Resource):
 
     @marshal_with(personFields)
     def get(self,id):
-        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).filter(PersonRepository.id == id).first()
+        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).filter(PersonRepository.id == id).first()
         if not person:
             abort(404, message="Person {} doesn't exist".format(id))
         return person,200
@@ -74,7 +81,7 @@ class PersonResource(Resource):
     def put(self,id):
         parsed_args = personParser.parse_args()
         
-        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).filter(PersonRepository.id == id).first()
+        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).filter(PersonRepository.id == id).first()
         if not person:
             abort(404, message="Person {} doesn't exist".format(id))
             
@@ -86,17 +93,20 @@ class PersonResource(Resource):
         person.contactMobile = parsed_args['contactMobile']
         person.contactEmail = parsed_args['contactEmail']
         
+        person.updatedAt = datetime.datetime.utcnow()
+        person.updatedBy = 'sys_update'
+        
         session.add(person)
         session.commit()
         return person, 201
 
     
     def delete(self,id):
-        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).filter(PersonRepository.id == id).first()
+        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).filter(PersonRepository.id == id).first()
         if not person:
             abort(404, message="Person {} doesn't exist".format(id))
             
-        person.deletedAt = 1
+        person.deletedAt = datetime.datetime.utcnow()
         person.deletedBy = 'sys'
         
         session.add(person)

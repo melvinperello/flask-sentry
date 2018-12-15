@@ -1,3 +1,6 @@
+git config --global user.name Melvin Perello
+git config --global user.email izumiiii.10@gmail.com
+
 /person
 
 nameLast:Perello
