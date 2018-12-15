@@ -9,19 +9,31 @@ Base = declarative_base()
 class PersonRepository(Base):
     __tablename__ = "person"
     id = Column(Integer, primary_key=True)
-    nameFirst = Column(String(100))
-    nameLast = Column(String(100))
-    nameMiddle = Column(String(100))
-    nameExt = Column(String(100))
-    contactTel = Column(String(100))
-    contactMobile = Column(String(100))
-    contactEmail = Column(String(100))
+    nameFirst = Column(String(100),default='')
+    nameLast = Column(String(100),default='')
+    nameMiddle = Column(String(100),default='')
+    nameExt = Column(String(100),default='')
+    contactTel = Column(String(100),default='')
+    contactMobile = Column(String(100),default='')
+    contactEmail = Column(String(100),default='')
+    # audit
+    updatedAt = Column(BIGINT,default=0)
+    updatedBy = Column(String(100),default='')
+    deletedAt = Column(BIGINT,default=0)
+    deletedBy = Column(String(100),default='')
+
+
+class RecordRepository(Base):
+    __tablename__ = "record"
+    id = Column(Integer, primary_key=True)
+    
     # audit
     updatedAt = Column(BIGINT)
     updatedBy = Column(String(100))
     deletedAt = Column(BIGINT)
     deletedBy = Column(String(100))
-
+    
+    
 
 # Create Tables
 if __name__ == "__main__":

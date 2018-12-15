@@ -1,1 +1,1 @@
-DB_URI = 'sqlite:///../sentry.db'
+DB_URI = 'sqlite:///sentry.db'
