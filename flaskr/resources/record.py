@@ -1,3 +1,6 @@
+from flaskr.models import PersonRepository
+from flaskr.db import session
+
 from flask_restful import Resource
 
 

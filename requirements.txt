@@ -7,4 +7,5 @@ Jinja2==2.10
 MarkupSafe==1.1.0
 pytz==2018.7
 six==1.12.0
+SQLAlchemy==1.2.15
 Werkzeug==0.14.1
