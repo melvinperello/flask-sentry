@@ -41,7 +41,7 @@ class PersonListResource(Resource):
         personList = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).all()
         if not personList:
             abort(404, message="List is empty")
-        return personList
+        return personList,200
 
     @marshal_with(personFields)
     def post(self):
@@ -65,18 +65,43 @@ class PersonResource(Resource):
 
     @marshal_with(personFields)
     def get(self,id):
-        person = session.query(PersonRepository).filter(PersonRepository.id == id).first()
+        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).filter(PersonRepository.id == id).first()
         if not person:
             abort(404, message="Person {} doesn't exist".format(id))
-        return person
+        return person,200
 
+    @marshal_with(personFields)
     def put(self,id):
-        # update
-        pass
+        parsed_args = personParser.parse_args()
+        
+        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).filter(PersonRepository.id == id).first()
+        if not person:
+            abort(404, message="Person {} doesn't exist".format(id))
+            
+        person.nameLast = parsed_args['nameLast']
+        person.nameFirst = parsed_args['nameFirst']
+        person.nameMiddle = parsed_args['nameMiddle']
+        person.nameExt = parsed_args['nameExt']
+        person.contactTel = parsed_args['contactTel']
+        person.contactMobile = parsed_args['contactMobile']
+        person.contactEmail = parsed_args['contactEmail']
+        
+        session.add(person)
+        session.commit()
+        return person, 201
 
+    
     def delete(self,id):
-        # delete
-        pass
+        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == 0).filter(PersonRepository.id == id).first()
+        if not person:
+            abort(404, message="Person {} doesn't exist".format(id))
+            
+        person.deletedAt = 1
+        person.deletedBy = 'sys'
+        
+        session.add(person)
+        session.commit()
+        return {}, 204
 
 
 
