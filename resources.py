@@ -1,69 +1,72 @@
-
-# rest
 from flask_restful import Resource
 from flask_restful import abort
 from flask_restful import fields
 from flask_restful import marshal_with
 from flask_restful import reqparse
-# request
 from flask import request
-
+#
+from db import db,Person,Record
 import time
-
-
-from app import app
-from models import Person
-from models import Record
-# db
-from db import session
-
-@app.teardown_request
-def remove_session(ex=None):
-    print("session_removed")
-    session.remove()
-
 
 
 #-------------------------------------------------------------------------------
 # /person
 #-------------------------------------------------------------------------------
-personParser = reqparse.RequestParser()
-personParser.add_argument('type', type=str,required=True,help='Type is required')
-personParser.add_argument('nameLast', type=str,required=True,help='Last Name is required')
-personParser.add_argument('nameFirst', type=str,required=True,help='First Name is required')
-personParser.add_argument('nameMiddle', type=str)
-personParser.add_argument('nameExt', type=str)
-personParser.add_argument('contactTel', type=str)
-personParser.add_argument('contactMobile', type=str)
-personParser.add_argument('contactEmail', type=str)
+'''
 
-personFields = {
-    'id': fields.Integer,
-    'type': fields.String,
-    'nameLast': fields.String,
-    'nameFirst': fields.String,
-    'nameMiddle': fields.String,
-    'nameExt' : fields.String,
-    'contactTel' : fields.String,
-    'contactMobile' : fields.String,
-    'contactEmail' : fields.String,
-    'updatedAt' : fields.Integer,
-    'updatedBy' : fields.String,
-}
-class PersonListResource(Resource):
+'''
+class PersonAPI(Resource):
+    json = {
+            'id': fields.Integer,
+            'type': fields.String,
+            'nameLast': fields.String,
+            'nameFirst': fields.String,
+            'nameMiddle': fields.String,
+            'nameExt' : fields.String,
+            'contactTel' : fields.String,
+            'contactMobile' : fields.String,
+            'contactEmail' : fields.String,
+            'updatedAt' : fields.Integer,
+            'updatedBy' : fields.String,
+        }
+    
+    def __init__(self):
+        self.request_parser = reqparse.RequestParser()
+        self.request_parser.add_argument('type', type=str,required=True,help='Type is required')
+        self.request_parser.add_argument('nameLast', type=str,required=True,help='Last Name is required')
+        self.request_parser.add_argument('nameFirst', type=str,required=True,help='First Name is required')
+        self.request_parser.add_argument('nameMiddle', type=str)
+        self.request_parser.add_argument('nameExt', type=str)
+        self.request_parser.add_argument('contactTel', type=str)
+        self.request_parser.add_argument('contactMobile', type=str)
+        self.request_parser.add_argument('contactEmail', type=str)
+        # end constructor
+        
+    def getActivePersonWithId(self,id):
+        person = db.session.query(Person)\
+                            .filter(Person.deletedAt == 0)\
+                            .filter(Person.id == id)\
+                            .first()
+        if not person:
+            abort(404, message="Person with id -- {} doesn't exist".format(id))
+        return person
+        
+    pass # end class
 
-    @marshal_with(personFields)
+class PersonListResource(PersonAPI):
+
+    @marshal_with(PersonAPI.json)
     def get(self):
-        personList = session.query(Person)\
-                            .filter(Person.deletedAt == None)\
+        personList = db.session.query(Person)\
+                            .filter(Person.deletedAt == 0)\
                             .all()
         if not personList:
             abort(404, message="List is empty")
         return personList,200
 
-    @marshal_with(personFields)
+    @marshal_with(PersonAPI.json)
     def post(self):
-        parsed_args = personParser.parse_args()
+        parsed_args = self.request_parser.parse_args()
 
         person = Person()
         person.type = parsed_args['type']
@@ -78,33 +81,22 @@ class PersonListResource(Resource):
         person.updatedAt = time.time()
         person.updatedBy = 'sys'
 
-        session.add(person)
-        session.commit()
+        db.session.add(person)
+        db.session.commit()
         return person,201
 
 
-class PersonResource(Resource):
+class PersonResource(PersonAPI):
 
-    @marshal_with(personFields)
+    @marshal_with(PersonAPI.json)
     def get(self,id):
-        person = session.query(Person)\
-                        .filter(Person.deletedAt == 0)\
-                        .filter(Person.id == id)\
-                        .first()
-        if not person:
-            abort(404, message="Person {} doesn't exist".format(id))
-        return person,200
+        return self.getActivePersonWithId(id),200
 
-    @marshal_with(personFields)
+    @marshal_with(PersonAPI.json)
     def put(self,id):
-        parsed_args = personParser.parse_args()
+        parsed_args = self.request_parser.parse_args()
         
-        person = session.query(Person)\
-                        .filter(Person.deletedAt == 0)\
-                        .filter(Person.id == id)\
-                        .first()
-        if not person:
-            abort(404, message="Person {} doesn't exist".format(id))
+        person = self.getActivePersonWithId(id)
         
         person.type = parsed_args['type']
         person.nameLast = parsed_args['nameLast']
@@ -118,24 +110,19 @@ class PersonResource(Resource):
         person.updatedAt = time.time()
         person.updatedBy = 'sys_update'
         
-        session.add(person)
-        session.commit()
+        db.session.add(person)
+        db.session.commit()
         return person, 201
 
     
     def delete(self,id):
-        person = session.query(Person)\
-                        .filter(Person.deletedAt == 0)\
-                        .filter(Person.id == id)\
-                        .first()
-        if not person:
-            abort(404, message="Person {} doesn't exist".format(id))
+        person = self.getActivePersonWithId(id)
             
         person.deletedAt = time.time()
         person.deletedBy = 'sys'
         
-        session.add(person)
-        session.commit()
+        db.session.add(person)
+        db.session.commit()
         return {}, 204
 
 
@@ -154,7 +141,7 @@ class RecordPersonResource(Resource):
     
     @marshal_with(recordFields)
     def post(self,person_id):
-        person = session.query(Person)\
+        person = db.session.query(Person)\
                         .filter(Person.deletedAt == 0)\
                         .filter(Person.id == person_id)\
                         .first()
@@ -172,8 +159,8 @@ class RecordPersonResource(Resource):
         rec.updatedAt = time.time()
         rec.updatedBy = 'sys'
         
-        session.add(rec)
-        session.commit()
+        db.session.add(rec)
+        db.session.commit()
         return rec, 201
 
 class RecordListResource(Resource):
