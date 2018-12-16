@@ -10,3 +10,4 @@ nameExt:
 contactTel:
 contactMobile:
 contactEmail:jhmvinperello@gmail.com
+type:EMPLOYEE

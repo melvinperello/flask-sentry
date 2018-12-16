@@ -24,6 +24,8 @@ class Person(Base):
     updatedBy = Column(String(100),default='')
     deletedAt = Column(BIGINT,default=0)
     deletedBy = Column(String(100),default='')
+    #
+    type = Column(String(100),default='')
 
 
 class Record(Base):
@@ -31,12 +33,11 @@ class Record(Base):
     id = Column(Integer, primary_key=True)
     #
     person_id = Column(Integer, ForeignKey('person.id'))
-    parent = relationship("person", backref="record")
     
     type = Column(String(100),default='')
     #
-    timeIn = Column(DateTime)
-    timeOut = Column(DateTime)
+    timeIn = Column(BIGINT,default=0)
+    timeOut = Column(BIGINT,default=0)
     
     # audit
     updatedAt = Column(BIGINT,default=0)
