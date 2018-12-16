@@ -1,6 +1,7 @@
 env/
 .idea/
 sentry.db
+nohup.out
 
 *.pyc
 __pycache__/

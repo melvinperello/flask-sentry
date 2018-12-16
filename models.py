@@ -3,11 +3,13 @@ from sqlalchemy import Integer
 from sqlalchemy import BIGINT
 from sqlalchemy import String
 from sqlalchemy import DateTime
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-class PersonRepository(Base):
+class Person(Base):
     __tablename__ = "person"
     id = Column(Integer, primary_key=True)
     nameFirst = Column(String(100),default='')
@@ -18,15 +20,18 @@ class PersonRepository(Base):
     contactMobile = Column(String(100),default='')
     contactEmail = Column(String(100),default='')
     # audit
-    updatedAt = Column(DateTime)
+    updatedAt = Column(BIGINT,default=0)
     updatedBy = Column(String(100),default='')
-    deletedAt = Column(DateTime)
+    deletedAt = Column(BIGINT,default=0)
     deletedBy = Column(String(100),default='')
 
 
-class RecordRepository(Base):
+class Record(Base):
     __tablename__ = "record"
     id = Column(Integer, primary_key=True)
+    #
+    person_id = Column(Integer, ForeignKey('person.id'))
+    parent = relationship("person", backref="record")
     
     type = Column(String(100),default='')
     #
@@ -34,9 +39,9 @@ class RecordRepository(Base):
     timeOut = Column(DateTime)
     
     # audit
-    updatedAt = Column(DateTime)
+    updatedAt = Column(BIGINT,default=0)
     updatedBy = Column(String(100),default='')
-    deletedAt = Column(DateTime)
+    deletedAt = Column(BIGINT,default=0)
     deletedBy = Column(String(100),default='')
     
     

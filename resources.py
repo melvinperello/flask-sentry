@@ -1,6 +1,7 @@
 # db
 from db import session
-from models import PersonRepository
+from models import Person
+from models import Record
 # rest
 from flask_restful import Resource
 from flask_restful import abort
@@ -10,7 +11,7 @@ from flask_restful import reqparse
 # request
 from flask import request
 
-import datetime
+import time
 
 
 
@@ -42,7 +43,9 @@ class PersonListResource(Resource):
 
     @marshal_with(personFields)
     def get(self):
-        personList = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).all()
+        personList = session.query(Person)\
+                            .filter(Person.deletedAt == None)\
+                            .all()
         if not personList:
             abort(404, message="List is empty")
         return personList,200
@@ -51,7 +54,7 @@ class PersonListResource(Resource):
     def post(self):
         parsed_args = personParser.parse_args()
 
-        person = PersonRepository()
+        person = Person()
         person.nameLast = parsed_args['nameLast']
         person.nameFirst = parsed_args['nameFirst']
         person.nameMiddle = parsed_args['nameMiddle']
@@ -60,7 +63,7 @@ class PersonListResource(Resource):
         person.contactMobile = parsed_args['contactMobile']
         person.contactEmail = parsed_args['contactEmail']
         
-        person.updatedAt = datetime.datetime.utcnow()
+        person.updatedAt = time.time()
         person.updatedBy = 'sys'
 
         session.add(person)
@@ -72,7 +75,10 @@ class PersonResource(Resource):
 
     @marshal_with(personFields)
     def get(self,id):
-        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).filter(PersonRepository.id == id).first()
+        person = session.query(Person)\
+                        .filter(Person.deletedAt == 0)\
+                        .filter(Person.id == id)\
+                        .first()
         if not person:
             abort(404, message="Person {} doesn't exist".format(id))
         return person,200
@@ -81,7 +87,10 @@ class PersonResource(Resource):
     def put(self,id):
         parsed_args = personParser.parse_args()
         
-        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).filter(PersonRepository.id == id).first()
+        person = session.query(Person)\
+                        .filter(Person.deletedAt == 0)\
+                        .filter(Person.id == id)\
+                        .first()
         if not person:
             abort(404, message="Person {} doesn't exist".format(id))
             
@@ -93,7 +102,7 @@ class PersonResource(Resource):
         person.contactMobile = parsed_args['contactMobile']
         person.contactEmail = parsed_args['contactEmail']
         
-        person.updatedAt = datetime.datetime.utcnow()
+        person.updatedAt = time.time()
         person.updatedBy = 'sys_update'
         
         session.add(person)
@@ -102,11 +111,14 @@ class PersonResource(Resource):
 
     
     def delete(self,id):
-        person = session.query(PersonRepository).filter(PersonRepository.deletedAt == None).filter(PersonRepository.id == id).first()
+        person = session.query(Person)\
+                        .filter(Person.deletedAt == 0)\
+                        .filter(Person.id == id)\
+                        .first()
         if not person:
             abort(404, message="Person {} doesn't exist".format(id))
             
-        person.deletedAt = datetime.datetime.utcnow()
+        person.deletedAt = time.time()
         person.deletedBy = 'sys'
         
         session.add(person)
@@ -121,11 +133,18 @@ class PersonResource(Resource):
 recordParser = reqparse.RequestParser()
 recordParser.add_argument('nameLast', type=str,required=True,help='Last Name is required')
 
-class RecordList(Resource):
+class RecordPersonResource(Resource):
+    def get(self,person_id):
+        pass
+    
+    def post(self,person_id):
+        pass
+
+class RecordListResource(Resource):
     def get(self):
         pass
 
-class Record(Resource):
+class RecordResource(Resource):
 
     def get(self,id):
         pass
