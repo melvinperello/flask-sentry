@@ -17,6 +17,10 @@ class Person(db.Model):
     deletedBy = db.Column(db.String(100),default='')
     #
     type = db.Column(db.String(100),default='')
+    
+
+    def getFullName(self):
+        return '{}, {} {} {}'.format(self.nameLast,self.nameFirst,self.nameMiddle,self.nameExt)
 
 
 class Record(db.Model):
@@ -24,15 +28,16 @@ class Record(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     #
     person_id = db.Column(db.Integer, db.ForeignKey('person.id'))
-    
+    # this cannot be changed even if the type of the person has changed
+    # non-retroactivity
     type = db.Column(db.String(100),default='')
     #
     timeIn = db.Column(db.BIGINT,default=0)
+    timeInBy = db.Column(db.String(100),default='') # SCross:Sistine Cross
     timeOut = db.Column(db.BIGINT,default=0)
+    timeOutBy = db.Column(db.String(100),default='') # SCross:Sistine Cross
     
     # audit
-    updatedAt = db.Column(db.BIGINT,default=0)
-    updatedBy = db.Column(db.String(100),default='')
     deletedAt = db.Column(db.BIGINT,default=0)
     deletedBy = db.Column(db.String(100),default='')
     
