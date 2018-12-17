@@ -8,7 +8,20 @@ from flask import request
 from db import db,Person,Record,User
 import time_provider
 
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required,get_jwt_identity,get_jwt_claims
+
+# Intercept
+
+def endpoint_admin():
+    user_claims = get_jwt_claims()
+    access = user_claims['access']
+    
+    if access != 'ADMIN':
+        abort(401, message="Admin access is required!")
+
+def api_user()
+    current_user = get_jwt_identity()
+    return current_user
 
 #-------------------------------------------------------------------------------
 # /person
@@ -83,7 +96,7 @@ class PersonListResource(PersonAPI):
         person.contactEmail = parsed_args['contactEmail']
         
         person.updatedAt = time_provider.getTime()
-        person.updatedBy = 'SHawking:::Stephen Hawking'
+        person.updatedBy = api_user()
 
         db.session.add(person)
         db.session.commit()
@@ -114,7 +127,7 @@ class PersonResource(PersonAPI):
         person.contactEmail = parsed_args['contactEmail']
         
         person.updatedAt = time_provider.getTime()
-        person.updatedBy = 'JFNash:::John Forbes Nash'
+        person.updatedBy = api_user()
         
         db.session.add(person)
         db.session.commit()
@@ -125,7 +138,7 @@ class PersonResource(PersonAPI):
         person = PersonAPI.getActivePersonWithId(id)
             
         person.deletedAt = time_provider.getTime()
-        person.deletedBy = 'AEinstein:::Albert Einstein'
+        person.deletedBy = api_user()
         
         db.session.add(person)
         db.session.commit()
@@ -197,7 +210,7 @@ class RecordPersonResource(RecordAPI):
         rec.person_id = person.id
         rec.type = person.type
         rec.timeIn = time_provider.getTime()
-        rec.timeInBy = 'SHawking:::Stephen Hawking'
+        rec.timeInBy = api_user()
         # insert
         db.session.add(rec)
         db.session.commit()
@@ -220,7 +233,7 @@ class RecordResource(RecordAPI):
             abort(400, message="Record with id -- {} has already TIMED OUT".format(id))
         
         record.timeOut = time_provider.getTime()
-        record.timeOutBy = 'JFNash:::John Forbes Nash'
+        record.timeOutBy = api_user()
         db.session.add(record)
         db.session.commit()
         return record, 200
@@ -229,7 +242,7 @@ class RecordResource(RecordAPI):
     def delete(self,id):
         record = RecordAPI.getActiveRecordWithId(id)
         record.deletedAt = time_provider.getTime()
-        record.deletedBy = 'AEinstein:::Albert Einstein'
+        record.deletedBy = api_user()
         
         db.session.add(record)
         db.session.commit()
@@ -302,6 +315,8 @@ class UserListResource(UserAPI):
     @marshal_with(UserAPI.json)
     @jwt_required
     def get(self):
+        endpoint_admin()
+        
         userList = db.session.query(User)\
                             .filter(User.deletedAt == 0)\
                             .all()
@@ -312,7 +327,11 @@ class UserListResource(UserAPI):
     @marshal_with(UserAPI.json)
     @jwt_required
     def post(self):
+        endpoint_admin()
+            
+        
         parsed_args = self.post_parser.parse_args()
+        
         
         user = User()
         user.username = parsed_args['username']
@@ -324,7 +343,7 @@ class UserListResource(UserAPI):
         user.access = parsed_args['access']
         
         user.updatedAt = time_provider.getTime()
-        user.updatedBy = 'SHawking:::Stephen Hawking'
+        user.updatedBy = api_user()
 
         db.session.add(user)
         db.session.commit()
@@ -336,12 +355,16 @@ class UserResource(UserAPI):
     @marshal_with(UserAPI.json)
     @jwt_required
     def get(self,id):
+        endpoint_admin()
+        
         return UserAPI.getActiveUserWithId(id)
         
     # time out abort if already out
     @marshal_with(UserAPI.json)
     @jwt_required
     def put(self,id):
+        endpoint_admin()
+        
         user = UserAPI.getActiveUserWithId(id)
         
         parsed_args = self.post_parser.parse_args()
@@ -358,7 +381,7 @@ class UserResource(UserAPI):
         user.access = parsed_args['access']
         
         user.updatedAt = time_provider.getTime()
-        user.updatedBy = 'JFNash:::John Forbes Nash'
+        user.updatedBy = api_user()
 
         db.session.add(user)
         db.session.commit()
@@ -366,11 +389,13 @@ class UserResource(UserAPI):
 
     @jwt_required
     def delete(self,id):
+        endpoint_admin()
+        
         user = UserAPI.getActiveUserWithId(id)
         
         
         user.deletedAt = time_provider.getTime()
-        user.deletedBy = 'AEinstein:::Albert Einstein'
+        user.deletedBy = api_user()
         
         db.session.add(user)
         db.session.commit()

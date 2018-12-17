@@ -26,6 +26,13 @@ from resources import UserListResource,UserResource
 api.add_resource(UserListResource, '/api/user') # POST (Add User)
 api.add_resource(UserResource,'/api/user/<int:id>') # GET PUT (Update User) DELETE
 
+#[healthcheck]
+@app.route('/health')
+def health():
+    # filter request from the load balancer address only
+    # other adresses return 404
+    return {},200
+
 # [middleware]
 @app.after_request
 def after_request(response):
@@ -72,10 +79,18 @@ def login():
     # Identity can be any data that is json serializable
     access_token = create_access_token(identity=username)
     return jsonify(access_token=access_token), 200
-    
+
+# Using the user_claims_loader, we can specify a method that will be
+# called when creating access tokens, and add these claims to the said
+# token. This method is passed the identity of who the token is being
+# created for, and must return data that is json serializable
 @jwt.user_claims_loader
 def add_claims_to_access_token(identity):
-    
+    user =  db.session.query(User)\
+            .filter(User.deletedAt == 0)\
+            .filter(User.username == identity)\
+            .first()
+            
     return {
-        'access': 'admin'
+        'access': user.access
     }
