@@ -19,7 +19,7 @@ def endpoint_admin():
     if access != 'ADMIN':
         abort(401, message="Admin access is required!")
 
-def api_user()
+def api_user():
     current_user = get_jwt_identity()
     return current_user
 
