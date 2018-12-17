@@ -41,6 +41,31 @@ class Record(db.Model):
     deletedAt = db.Column(db.BIGINT,default=0)
     deletedBy = db.Column(db.String(100),default='')
     
+class User(db.Model):
+    __tablename__ = "user"
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100),nullable=False,unique=True)
+    password = db.Column(db.String(200),nullable=False)
+    nameFirst = db.Column(db.String(100),default='')
+    nameLast = db.Column(db.String(100),default='')
+    nameMiddle = db.Column(db.String(100),default='')
+    nameExt = db.Column(db.String(100),default='')
+    # audit
+    updatedAt = db.Column(db.BIGINT,default=0)
+    updatedBy = db.Column(db.String(100),default='')
+    deletedAt = db.Column(db.BIGINT,default=0)
+    deletedBy = db.Column(db.String(100),default='')
+    # claims
+    access = db.Column(db.String(100),default='')
+    
+    def getFullName(self):
+        return '{}, {} {} {}'.format(self.nameLast,self.nameFirst,self.nameMiddle,self.nameExt)
+        
+    pass # end class
+    
+    
+    
+    
     
 
 # Create Tables

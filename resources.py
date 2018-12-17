@@ -5,7 +5,7 @@ from flask_restful import marshal_with
 from flask_restful import reqparse
 from flask import request
 #
-from db import db,Person,Record
+from db import db,Person,Record,User
 import time_provider
 
 
@@ -224,3 +224,142 @@ class RecordResource(RecordAPI):
         db.session.add(record)
         db.session.commit()
         return {}, 204
+        
+#-------------------------------------------------------------------------------
+# /user
+#-------------------------------------------------------------------------------
+import uuid
+import hashlib
+
+class UserAPI(Resource):
+    
+    json = {
+        'id': fields.Integer,
+        'username': fields.String,
+        'nameLast': fields.String,
+        'nameFirst': fields.String,
+        'nameMiddle': fields.String,
+        'nameExt' : fields.String,
+        'access' : fields.String,
+        'updatedAt' : fields.Integer,
+        'updatedBy' : fields.String,
+    }
+    
+    def __init__(self):
+        self.initPostParser()
+        # end constructor
+        
+    def initPostParser(self):
+        self.post_parser = reqparse.RequestParser()
+        self.post_parser.add_argument('username', type=str,required=True,help='Username is required')
+        self.post_parser.add_argument('password', type=str)
+        self.post_parser.add_argument('nameLast', type=str,required=True,help='Last Name is required')
+        self.post_parser.add_argument('nameFirst', type=str,required=True,help='First Name is required')
+        self.post_parser.add_argument('nameMiddle', type=str)
+        self.post_parser.add_argument('nameExt', type=str)
+        self.post_parser.add_argument('access', type=str,required=True,help='Access is required')
+        
+    def initLoginParser(self):
+        self.login_parser = reqparse.RequestParser()
+        self.login_parser.add_argument('username', type=str,required=True,help='Username is required')
+        self.login_parser.add_argument('password', type=str,required=True,help='Password is required')
+    
+    @staticmethod
+    def hash_password(password):
+        # uuid is used to generate a random number
+        salt = uuid.uuid4().hex
+        return hashlib.sha512(salt.encode() + password.encode()).hexdigest() + ':' + salt
+    
+    @staticmethod
+    def check_password(hashed_password, user_password):
+        password, salt = hashed_password.split(':')
+        return password == hashlib.sha512(salt.encode() + user_password.encode()).hexdigest()
+        
+    @staticmethod
+    def getActiveUserWithId(id):
+        user =  db.session.query(User)\
+                            .filter(User.deletedAt == 0)\
+                            .filter(User.id == id)\
+                            .first()
+        if not user:
+            abort(404, message="User with id -- {} doesn't exist".format(id))
+        return user
+        
+        
+        
+class UserListResource(UserAPI):
+    @marshal_with(UserAPI.json)
+    def get(self):
+        userList = db.session.query(User)\
+                            .filter(User.deletedAt == 0)\
+                            .all()
+        if not userList:
+            abort(404, message="List is empty")
+        return userList,200
+        
+    @marshal_with(UserAPI.json)
+    def post(self):
+        parsed_args = self.post_parser.parse_args()
+        
+        user = User()
+        user.username = parsed_args['username']
+        user.password = UserAPI.hash_password(parsed_args['password'])
+        user.nameLast = parsed_args['nameLast']
+        user.nameFirst = parsed_args['nameFirst']
+        user.nameMiddle = parsed_args['nameMiddle']
+        user.nameExt = parsed_args['nameExt']
+        user.access = parsed_args['access']
+        
+        user.updatedAt = time_provider.getTime()
+        user.updatedBy = 'SHawking:::Stephen Hawking'
+
+        db.session.add(user)
+        db.session.commit()
+        return user,201
+        
+        
+class UserResource(UserAPI):
+    
+    @marshal_with(UserAPI.json)
+    def get(self,id):
+        return UserAPI.getActiveUserWithId(id)
+        
+    # time out abort if already out
+    @marshal_with(UserAPI.json)
+    def put(self,id):
+        user = UserAPI.getActiveUserWithId(id)
+        
+        parsed_args = self.post_parser.parse_args()
+        user.username = parsed_args['username']
+        # update password if not empty (change password)
+        password = parsed_args['password']
+        if password:
+            user.password = UserAPI.hash_password(parsed_args['password'])
+        #
+        user.nameLast = parsed_args['nameLast']
+        user.nameFirst = parsed_args['nameFirst']
+        user.nameMiddle = parsed_args['nameMiddle']
+        user.nameExt = parsed_args['nameExt']
+        user.access = parsed_args['access']
+        
+        user.updatedAt = time_provider.getTime()
+        user.updatedBy = 'JFNash:::John Forbes Nash'
+
+        db.session.add(user)
+        db.session.commit()
+        return user, 200
+
+    def delete(self,id):
+        user = UserAPI.getActiveUserWithId(id)
+        
+        
+        user.deletedAt = time_provider.getTime()
+        user.deletedBy = 'AEinstein:::Albert Einstein'
+        
+        db.session.add(user)
+        db.session.commit()
+        return {}, 204
+
+class UserLoginResource(UserAPI):
+    def post(self):
+        

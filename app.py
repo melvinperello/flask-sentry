@@ -21,6 +21,12 @@ from resources import RecordPersonResource,RecordResource
 api.add_resource(RecordPersonResource, '/api/record/person/<int:person_id>') # GET (ALL) POST (Time In)
 api.add_resource(RecordResource,'/api/record/<int:id>') # GET PUT (Time Out) DELETE (Cancel)
 
+# /user resources
+from resources import UserListResource,UserResource#,UserLoginResource
+api.add_resource(UserListResource, '/api/user') # POST (Add User)
+api.add_resource(UserResource,'/api/user/<int:id>') # GET PUT (Update User) DELETE
+#api.add_resource(UserLoginResource,'/api/user/login') # POST return JWT
+
 @app.after_request
 def after_request(response):
     response.headers['SENTRY_NODE'] = 'sg-node-dev'

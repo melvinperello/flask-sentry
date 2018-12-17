@@ -11,3 +11,13 @@ contactTel:
 contactMobile:
 contactEmail:jhmvinperello@gmail.com
 type:EMPLOYEE
+
+SPACE = %20
+@ = %40
+DOT = %2E
+
+nameLast=Hawking&nameFirst=Stephen%20John&nameMiddle=Block&nameExt=III&contactTel=044256123&contactMobile=09225468546&contactEmail=sample%40sample%2Ecom&type=EMPLOYEE
+
+
+# new user
+nameLast=Kamote&nameFirst=Potato%Salad&nameMiddle=Fruit&nameExt=II&
