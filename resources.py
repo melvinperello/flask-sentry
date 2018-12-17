@@ -8,6 +8,7 @@ from flask import request
 from db import db,Person,Record,User
 import time_provider
 
+from flask_jwt_extended import jwt_required
 
 #-------------------------------------------------------------------------------
 # /person
@@ -57,6 +58,7 @@ class PersonAPI(Resource):
 class PersonListResource(PersonAPI):
 
     @marshal_with(PersonAPI.json)
+    @jwt_required
     def get(self):
         personList = db.session.query(Person)\
                             .filter(Person.deletedAt == 0)\
@@ -66,6 +68,7 @@ class PersonListResource(PersonAPI):
         return personList,200
 
     @marshal_with(PersonAPI.json)
+    @jwt_required
     def post(self):
         parsed_args = self.request_parser.parse_args()
 
@@ -90,10 +93,12 @@ class PersonListResource(PersonAPI):
 class PersonResource(PersonAPI):
 
     @marshal_with(PersonAPI.json)
+    @jwt_required
     def get(self,id):
         return PersonAPI.getActivePersonWithId(id),200
 
     @marshal_with(PersonAPI.json)
+    @jwt_required
     def put(self,id):
         parsed_args = self.request_parser.parse_args()
         
@@ -115,7 +120,7 @@ class PersonResource(PersonAPI):
         db.session.commit()
         return person, 200
 
-    
+    @jwt_required
     def delete(self,id):
         person = PersonAPI.getActivePersonWithId(id)
             
@@ -163,6 +168,7 @@ class RecordAPI(Resource):
 class RecordPersonResource(RecordAPI):
 
     @marshal_with(RecordAPI.json)
+    @jwt_required
     def get(self,person_id):
         records = db.session.query(Record)\
                             .filter(Record.deletedAt == 0)\
@@ -173,6 +179,7 @@ class RecordPersonResource(RecordAPI):
         
     # time in abort if already in
     @marshal_with(RecordAPI.json)
+    @jwt_required
     def post(self,person_id):
         # Query all records with this person id, reject if there is a record with no time out
         # [abort] this person has a time in recod with no out record
@@ -200,11 +207,13 @@ class RecordPersonResource(RecordAPI):
 
 class RecordResource(RecordAPI):
     @marshal_with(RecordAPI.json)
+    @jwt_required
     def get(self,id):
         return RecordAPI.getActiveRecordWithId(id)
         
     # time out abort if already out
     @marshal_with(RecordAPI.json)
+    @jwt_required
     def put(self,id):
         record = RecordAPI.getActiveRecordWithId(id)
         if record.timeOut != 0:
@@ -216,6 +225,7 @@ class RecordResource(RecordAPI):
         db.session.commit()
         return record, 200
 
+    @jwt_required
     def delete(self,id):
         record = RecordAPI.getActiveRecordWithId(id)
         record.deletedAt = time_provider.getTime()
@@ -247,6 +257,7 @@ class UserAPI(Resource):
     
     def __init__(self):
         self.initPostParser()
+        self.initLoginParser()
         # end constructor
         
     def initPostParser(self):
@@ -289,6 +300,7 @@ class UserAPI(Resource):
         
 class UserListResource(UserAPI):
     @marshal_with(UserAPI.json)
+    @jwt_required
     def get(self):
         userList = db.session.query(User)\
                             .filter(User.deletedAt == 0)\
@@ -298,6 +310,7 @@ class UserListResource(UserAPI):
         return userList,200
         
     @marshal_with(UserAPI.json)
+    @jwt_required
     def post(self):
         parsed_args = self.post_parser.parse_args()
         
@@ -321,11 +334,13 @@ class UserListResource(UserAPI):
 class UserResource(UserAPI):
     
     @marshal_with(UserAPI.json)
+    @jwt_required
     def get(self,id):
         return UserAPI.getActiveUserWithId(id)
         
     # time out abort if already out
     @marshal_with(UserAPI.json)
+    @jwt_required
     def put(self,id):
         user = UserAPI.getActiveUserWithId(id)
         
@@ -349,6 +364,7 @@ class UserResource(UserAPI):
         db.session.commit()
         return user, 200
 
+    @jwt_required
     def delete(self,id):
         user = UserAPI.getActiveUserWithId(id)
         
@@ -360,6 +376,3 @@ class UserResource(UserAPI):
         db.session.commit()
         return {}, 204
 
-class UserLoginResource(UserAPI):
-    def post(self):
-        

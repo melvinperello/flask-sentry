@@ -20,4 +20,4 @@ nameLast=Hawking&nameFirst=Stephen%20John&nameMiddle=Block&nameExt=III&contactTe
 
 
 # new user
-nameLast=Kamote&nameFirst=Potato%Salad&nameMiddle=Fruit&nameExt=II&
+username=PSKamote&password=123456&nameLast=Kamote&nameFirst=Potato%Salad&nameMiddle=Fruit&nameExt=II&access=ADMIN
