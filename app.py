@@ -27,11 +27,11 @@ api.add_resource(UserListResource, '/api/user') # POST (Add User)
 api.add_resource(UserResource,'/api/user/<int:id>') # GET PUT (Update User) DELETE
 
 #[healthcheck]
-@app.route('/health')
+@app.route('/health' , methods=['GET'])
 def health():
     # filter request from the load balancer address only
     # other adresses return 404
-    return {},200
+    return jsonify({"message" : "I'm Okay !!!"}),200
 
 # [middleware]
 @app.after_request
