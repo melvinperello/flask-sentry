@@ -21,22 +21,23 @@ class CustomApi(Api):
         return super.handle_error(e)
 #-------------------------------------------------------------------------------
 #API
-api = CustomApi(app)
+# add prefix to resources
+api = CustomApi(app,prefix='/api/v1')
 
 # /person resources
 from resources import PersonListResource,PersonResource
-api.add_resource(PersonListResource, '/api/person') # GET (ALL) POST
-api.add_resource(PersonResource,'/api/person/<int:id>') # GET PUT DELETE
+api.add_resource(PersonListResource, '/person') # GET (ALL) POST
+api.add_resource(PersonResource,'/person/<int:id>') # GET PUT DELETE
 
 # /record resources
 from resources import RecordPersonResource,RecordResource
-api.add_resource(RecordPersonResource, '/api/record/person/<int:person_id>') # GET (ALL) POST (Time In)
-api.add_resource(RecordResource,'/api/record/<int:id>') # GET PUT (Time Out) DELETE (Cancel)
+api.add_resource(RecordPersonResource, '/record/person/<int:person_id>') # GET (ALL) POST (Time In)
+api.add_resource(RecordResource,'/record/<int:id>') # GET PUT (Time Out) DELETE (Cancel)
 
 # /user resources
 from resources import UserListResource,UserResource
-api.add_resource(UserListResource, '/api/user') # POST (Add User)
-api.add_resource(UserResource,'/api/user/<int:id>') # GET PUT (Update User) DELETE
+api.add_resource(UserListResource, '/user') # POST (Add User)
+api.add_resource(UserResource,'/user/<int:id>') # GET PUT (Update User) DELETE
 
 #[healthcheck]
 @app.route('/health' , methods=['GET'])
