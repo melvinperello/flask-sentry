@@ -9,7 +9,7 @@ nameMiddle:Nieto
 nameExt:
 contactTel:
 contactMobile:
-contactEmail:jhmvinperello@gmail.com
+contactEmail:sample@sample.com
 type:EMPLOYEE
 
 SPACE = %20
@@ -21,3 +21,35 @@ nameLast=Hawking&nameFirst=Stephen%20John&nameMiddle=Block&nameExt=III&contactTe
 
 # new user
 username=PSKamote&password=123456&nameLast=Kamote&nameFirst=Potato%Salad&nameMiddle=Fruit&nameExt=II&access=ADMIN
+
+
+# EXCEPTION PROPAGATION
+https://stackoverflow.com/questions/52087743/flask-restful-noauthorizationerror-missing-authorization-header
+
+Solution #1
+The first solution that did work for me, was to propagate the exceptions... meaning that exceptions are re-raised instead of being handled by the app's error handlers. However, according to this it's not a great solution because it overrides Flask's native error handler functions: app.handle_user_exception and app.handle_exception.
+
+So you would set PROPAGATE_EXCEPTIONS in your app configuration:
+
+app.config['PROPAGATE_EXCEPTIONS'] = True
+
+Solution #2
+
+The final solution that I'm going with is to enhance the error handler of Flask's Api, based on a recent suggestion found here.
+
+from flask import Flask
+from flask_restful import Api
+
+class CustomApi(Api):
+    def handle_error(self, e):
+        for val in current_app.error_handler_spec.values():
+            for handler in val.values():
+                registered_error_handlers = list(filter(lambda x: isinstance(e, x), handler.keys()))
+                if len(registered_error_handlers) > 0:
+                    raise e
+        return super().handle_error(e)
+
+app = Flask(__name__)
+api = CustomApi(app, prefix='/api/v2') # same params can be passed here
+
+#
